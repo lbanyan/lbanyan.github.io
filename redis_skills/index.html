@@ -6,15 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="https://lbanyan.github.io">
-  <title>Tag: HTTP | 大榕树的博客</title>
+  <title>Redis使用技巧 | 大榕树的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="大榕树的博客">
-<meta property="og:url" content="https://lbanyan.github.io/tags/HTTP/index.html">
+  <meta name="description" content="借助Redis实现熔断以下为错误的示例：12345678910111213141516171819/** * 断电时，偶现key的过期时间未设置，长期驻留 * @param key * @param increment * @param seconds * @return */@Deprecatedpublic Long incrby(final String key, final long in">
+<meta name="keywords" content="Redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis使用技巧">
+<meta property="og:url" content="https://lbanyan.github.io/redis_skills/index.html">
 <meta property="og:site_name" content="大榕树的博客">
+<meta property="og:description" content="借助Redis实现熔断以下为错误的示例：12345678910111213141516171819/** * 断电时，偶现key的过期时间未设置，长期驻留 * @param key * @param increment * @param seconds * @return */@Deprecatedpublic Long incrby(final String key, final long in">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-09-03T14:01:18.765Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="大榕树的博客">
+<meta name="twitter:title" content="Redis使用技巧">
+<meta name="twitter:description" content="借助Redis实现熔断以下为错误的示例：12345678910111213141516171819/** * 断电时，偶现key的过期时间未设置，长期驻留 * @param key * @param increment * @param seconds * @return */@Deprecatedpublic Long incrby(final String key, final long in">
   
     <link rel="alternative" href="/atom.xml" title="大榕树的博客" type="application/atom+xml">
   
@@ -186,64 +191,184 @@ var _hmt = _hmt || [];
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-redis_skills" class="article article-type-post " itemscope="" itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2018" class="archive-year">2018</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/tencent_quic/" class="archive-article-date">
-  	<time datetime="2018-01-25T02:05:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-01-25</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/tencent_quic/">《QQ 空间基于 QUIC 协议的客户端加速方案》会议总结</a>
+    <h1 class="article-title" itemprop="name">
+      Redis使用技巧
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/redis_skills/" class="archive-article-date">
+  	<time datetime="2019-09-03T12:15:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-03</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="借助Redis实现熔断"><a href="#借助Redis实现熔断" class="headerlink" title="借助Redis实现熔断"></a>借助Redis实现熔断</h3><p>以下为错误的示例：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 断电时，偶现key的过期时间未设置，长期驻留</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> key</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> increment</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> seconds</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Deprecated</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Long <span class="title">incrby</span><span class="params">(<span class="keyword">final</span> String key, <span class="keyword">final</span> <span class="keyword">long</span> increment, <span class="keyword">final</span> <span class="keyword">int</span> seconds)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">long</span> value = incr(key);</span><br><span class="line">	<span class="keyword">if</span> (seconds &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> value;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 仅在第一次设置过期时间</span></span><br><span class="line">	<span class="keyword">if</span> (value == increment) &#123;</span><br><span class="line">		redisClient.getKeyOps().expire(key, seconds);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里可以借助lua来实现incr和expire的原子性操作，代码示例如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> String INCRBY_EVAL =</span><br><span class="line">        <span class="string">"local current;\n"</span> +</span><br><span class="line">        <span class="string">"current = redis.call(\"incrby\",KEYS[1],ARGV[1]);\n"</span> +</span><br><span class="line">        <span class="string">"if tostring(current) == ARGV[1] then\n"</span> +</span><br><span class="line">        <span class="string">"    redis.call(\"expire\",KEYS[1],ARGV[2])\n"</span> +</span><br><span class="line">        <span class="string">"end;"</span> +</span><br><span class="line">        <span class="string">"return current;"</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Long <span class="title">evalIncrby</span><span class="params">(<span class="keyword">final</span> String key, <span class="keyword">final</span> <span class="keyword">long</span> increment, <span class="keyword">final</span> <span class="keyword">int</span> seconds)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> redisClient.execute(<span class="keyword">new</span> RedisCallback&lt;Long&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Long <span class="title">doInRedis</span><span class="params">(Jedis jedis)</span> </span>&#123;</span><br><span class="line">            List&lt;String&gt; keys = Lists.newArrayList(key);</span><br><span class="line">            List&lt;String&gt; args = Lists.newArrayList(increment + <span class="string">""</span>, seconds + <span class="string">""</span>);</span><br><span class="line">            <span class="keyword">return</span> (Long) jedis.eval(INCRBY_EVAL, keys, args);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+      
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="/weixin.png">
+                      <span class="reward-type">微信</span>
+                    </div>
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">HTTP</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">QUIC</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Redis</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="http://s.jiathis.com/qrcode.php?url=https://lbanyan.github.io/redis_skills/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/perf_template_message/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">电商平台发送微信模板消息优化方案</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#借助Redis实现熔断"><span class="toc-number">1.</span> <span class="toc-text">借助Redis实现熔断</span></a></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
+        
+    </div>
+</aside>
+
+
+
   
 
-    
+  
+
+  
+
+  
 
 
           </div>
@@ -266,9 +391,9 @@ var _hmt = _hmt || [];
 	var yiliaConfig = {
 		mathjax: true,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
