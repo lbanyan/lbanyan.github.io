@@ -188,6 +188,157 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-idempotency" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/idempotency/">幂等性</a>
+    </h1>
+  
+
+        
+        <a href="/idempotency/" class="archive-article-date">
+  	<time datetime="2017-09-23T13:36:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-09-23</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h3><p><strong>幂等性：一次或N次重复操作，不应该产生副作用。</strong><br>例如一个支付过程中，用户客户端支付后，未收到服务端的返回结果，进入重试，可能会导致服务端两次扣款。<br>为避免该问题，用户客户端支付前需先和服务端协商一个ticketId，之后客户端发起的支付行为和服务端返回的结果都应包含该相同的ticketId。<br>根据上述的理解：HTTP GET、DELETE天然具有幂等性，POST、PUT可能会产生幂等性问题，应注意这一点。</p>
+<h3 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h3><p>请参考我的 <a href="https://lbanyan.github.io/2017/10/11/prevent_replay_attacks/">防止重放攻击</a>。防止重放攻击可以同时使接口拥有幂等性，真是一举两得。</p>
+
+      
+      
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">幂等性</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/idempotency/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-prevent_replay_attacks" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/prevent_replay_attacks/">防止重放攻击</a>
+    </h1>
+  
+
+        
+        <a href="/prevent_replay_attacks/" class="archive-article-date">
+  	<time datetime="2017-09-23T11:31:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-09-23</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>重放攻击，即攻击者在获取一次正确请求的URL及各参数后，使用该URL及参数对服务端多次请求的一种攻击行为。<br>例如在IaaS平台，用户创建云主机的行为，攻击者采取重放攻击，会导致该用户账户下出现大量恶意创建的云主机，该行为不仅影响用户的账户费用，同时对IaaS平台造成不稳定的可能性。</p>
+        
+          <a class="article-more-a" href="/prevent_replay_attacks/#more">more >></a>
+        
+      
+      
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">重放攻击</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/prevent_replay_attacks/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-java_object_size" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
   <div class="article-inner">
     
@@ -828,172 +979,6 @@ var _hmt = _hmt || [];
 
 
   
-    <article id="post-netflix_loadbalancer" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/netflix_loadbalancer/">Netflix负载均衡器Ribbon的使用</a>
-    </h1>
-  
-
-        
-        <a href="/netflix_loadbalancer/" class="archive-article-date">
-  	<time datetime="2017-08-03T12:36:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-08-03</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Ribbon原理及代码解析可参考： <a href="http://blog.didispace.com/springcloud-sourcecode-ribbon/" target="_blank" rel="noopener">Spring Cloud源码分析（二）Ribbon</a> ，本文仅简单介绍我们在生产环境中如何使用DynamicServerListLoadBalancer。</p>
-<h3 id="业务背景"><a href="#业务背景" class="headerlink" title="业务背景"></a>业务背景</h3><p>如下图所示：<br><img src="/img/matching_ranking.png" alt=""><br>Matching服务请求各宿主机上的Ranking服务来完成任务，Ranking服务提供的是HTTP的接口，Matching和Ranking在同一个机房，Matching可以通过<a href="http://ip:port/ranking" target="_blank" rel="noopener">http://ip:port/ranking</a> 的方式访问到各Ranking服务。具体Matching和Ranking是做什么的，可以不需要知道。<br>为了实现Matching到Ranking的合理调度，我们使用了Ribbon。</p>
-        
-          <a class="article-more-a" href="/netflix_loadbalancer/#more">more >></a>
-        
-      
-      
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Ribbon</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">负载均衡</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/netflix_loadbalancer/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-thrift_connection_reset" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/thrift_connection_reset/">Thrift服务端Connection Reset by Peer和Broken pipe</a>
-    </h1>
-  
-
-        
-        <a href="/thrift_connection_reset/" class="archive-article-date">
-  	<time datetime="2017-07-31T11:51:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-07-31</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h3><p>虎牙主播推荐功能中，用于获取推荐列表的客户端出现大量的请求服务端超时现象，但服务端日志无ERROR的异常。</p>
-<h3 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h3><p>经排查，一是网络正常，二是客户端只是请求了服务端，并没有做其他耗时操作，三是客户端发送请求的数量大于服务端处理请求的数量（此处客户端有客户端发送请求的数量统计，服务端在每次处理完请求后会异步记录入数据库）。那么问题应该出在客户端和服务端的连接这里。<br>最终找到了原因：Thrift的“Connection reset by peer”和“Broken pipe”异常等级为WARN级，由于平台的QPS很高，在服务端我们的Log使用的是ERROR级，因而并未打印出这类WARN异常。</p>
-        
-          <a class="article-more-a" href="/thrift_connection_reset/#more">more >></a>
-        
-      
-      
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Broken pipe</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Thrift</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Connection Reset by Peer</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/thrift_connection_reset/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
@@ -1120,6 +1105,10 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">AI平台</a>
               </li>
              
@@ -1129,22 +1118,6 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">HTTP Referer</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">幂等性</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Java</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Java.Map</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1172,19 +1145,23 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">幂等性</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">Java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Java.Map</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">包冲突</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">屏蔽System.out</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">时间戳</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1200,6 +1177,18 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">转义</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">压测</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">Multimaps</a>
               </li>
              
@@ -1212,15 +1201,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
+                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">转义</a>
+                <a href="javascript:void(0)" class="js-tag color4">时间戳</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1244,10 +1229,6 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">压测</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">csv</a>
               </li>
              
@@ -1256,19 +1237,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Ribbon</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">负载均衡</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">备份</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">重放攻击</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1284,19 +1253,23 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">RabbitMQ</a>
+                <a href="javascript:void(0)" class="js-tag color5">重放攻击</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">x-delay</a>
+                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">x-dead-letter-exchange</a>
+                <a href="javascript:void(0)" class="js-tag color2">Ribbon</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">x-dead-letter-routing-key</a>
+                <a href="javascript:void(0)" class="js-tag color5">负载均衡</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1312,11 +1285,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
+                <a href="javascript:void(0)" class="js-tag color4">RabbitMQ</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1324,15 +1293,19 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
+                <a href="javascript:void(0)" class="js-tag color3">x-delay</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
+                <a href="javascript:void(0)" class="js-tag color3">x-dead-letter-exchange</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
+                <a href="javascript:void(0)" class="js-tag color1">x-dead-letter-routing-key</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1341,6 +1314,14 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">ConcurrentSkipListMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1356,11 +1337,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
+                <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1381,6 +1358,14 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">Connection Reset by Peer</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
               </li>
              
               <li class="article-tag-list-item">
