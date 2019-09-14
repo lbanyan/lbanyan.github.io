@@ -16,7 +16,7 @@
 <meta property="og:site_name" content="大榕树的博客">
 <meta property="og:description" content="借助Redis实现熔断以下为错误的示例：12345678910111213141516171819/** * 断电时，偶现key的过期时间未设置，长期驻留 * @param key * @param increment * @param seconds * @return */@Deprecatedpublic Long incrby(final String key, final long in">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-09-03T14:01:18.765Z">
+<meta property="og:updated_time" content="2019-09-14T08:50:46.722Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Redis使用技巧">
 <meta name="twitter:description" content="借助Redis实现熔断以下为错误的示例：12345678910111213141516171819/** * 断电时，偶现key的过期时间未设置，长期驻留 * @param key * @param increment * @param seconds * @return */@Deprecatedpublic Long incrby(final String key, final long in">
@@ -213,6 +213,7 @@ var _hmt = _hmt || [];
       
         <h3 id="借助Redis实现熔断"><a href="#借助Redis实现熔断" class="headerlink" title="借助Redis实现熔断"></a>借助Redis实现熔断</h3><p>以下为错误的示例：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 断电时，偶现key的过期时间未设置，长期驻留</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> key</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> increment</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> seconds</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Deprecated</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Long <span class="title">incrby</span><span class="params">(<span class="keyword">final</span> String key, <span class="keyword">final</span> <span class="keyword">long</span> increment, <span class="keyword">final</span> <span class="keyword">int</span> seconds)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">long</span> value = incr(key);</span><br><span class="line">	<span class="keyword">if</span> (seconds &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> value;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 仅在第一次设置过期时间</span></span><br><span class="line">	<span class="keyword">if</span> (value == increment) &#123;</span><br><span class="line">		redisClient.getKeyOps().expire(key, seconds);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>这里可以借助lua来实现incr和expire的原子性操作，代码示例如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> String INCRBY_EVAL =</span><br><span class="line">        <span class="string">"local current;\n"</span> +</span><br><span class="line">        <span class="string">"current = redis.call(\"incrby\",KEYS[1],ARGV[1]);\n"</span> +</span><br><span class="line">        <span class="string">"if tostring(current) == ARGV[1] then\n"</span> +</span><br><span class="line">        <span class="string">"    redis.call(\"expire\",KEYS[1],ARGV[2])\n"</span> +</span><br><span class="line">        <span class="string">"end;"</span> +</span><br><span class="line">        <span class="string">"return current;"</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Long <span class="title">evalIncrby</span><span class="params">(<span class="keyword">final</span> String key, <span class="keyword">final</span> <span class="keyword">long</span> increment, <span class="keyword">final</span> <span class="keyword">int</span> seconds)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> redisClient.execute(<span class="keyword">new</span> RedisCallback&lt;Long&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Long <span class="title">doInRedis</span><span class="params">(Jedis jedis)</span> </span>&#123;</span><br><span class="line">            List&lt;String&gt; keys = Lists.newArrayList(key);</span><br><span class="line">            List&lt;String&gt; args = Lists.newArrayList(increment + <span class="string">""</span>, seconds + <span class="string">""</span>);</span><br><span class="line">            <span class="keyword">return</span> (Long) jedis.eval(INCRBY_EVAL, keys, args);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Redis热点key或流量打爆的问题解决"><a href="#Redis热点key或流量打爆的问题解决" class="headerlink" title="Redis热点key或流量打爆的问题解决"></a>Redis热点key或流量打爆的问题解决</h3><p>可以交由上层服务直接内存缓存，对外提供服务，因为上层服务一般都支持横向扩展。</p>
 
       
       
@@ -360,7 +361,7 @@ var _hmt = _hmt || [];
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#借助Redis实现熔断"><span class="toc-number">1.</span> <span class="toc-text">借助Redis实现熔断</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#借助Redis实现熔断"><span class="toc-number">1.</span> <span class="toc-text">借助Redis实现熔断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Redis热点key或流量打爆的问题解决"><span class="toc-number">2.</span> <span class="toc-text">Redis热点key或流量打爆的问题解决</span></a></li></ol>
                     </div>
                 </span>
             </div>
@@ -491,15 +492,11 @@ MathJax.Hub.Queue(function() {
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">机器学习</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">增量推荐</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">AI平台</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -508,10 +505,6 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">HTTP Referer</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -547,6 +540,18 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">机器学习</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">增量推荐</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">屏蔽System.out</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">Java</a>
               </li>
              
@@ -555,7 +560,23 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">屏蔽System.out</a>
+                <a href="javascript:void(0)" class="js-tag color3">TreeMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">jmap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">jviusalvm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">时间戳</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -568,34 +589,6 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">ConcurrentModificationException</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">jmap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">jviusalvm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">TreeMap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">时间戳</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">转义</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -619,11 +612,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">压测</a>
+                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">备份</a>
+                <a href="javascript:void(0)" class="js-tag color3">转义</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">压测</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -647,6 +644,14 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">备份</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">重放攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">WIN 10</a>
               </li>
              
@@ -656,10 +661,6 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">Permission denied</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">重放攻击</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -679,6 +680,14 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Broken pipe</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">x-delay</a>
               </li>
              
@@ -691,11 +700,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Broken pipe</a>
+                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -704,18 +709,6 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">有序集合</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">ConcurrentSkipListMap</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -731,15 +724,31 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">有序集合</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">ConcurrentSkipListMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Thrift</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">Connection Reset by Peer</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -752,14 +761,6 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">Map</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Thrift</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Connection Reset by Peer</a>
               </li>
              
               <li class="article-tag-list-item">
