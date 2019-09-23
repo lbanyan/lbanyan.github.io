@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="大榕树的博客">
 <meta property="og:description" content="自旋锁理论在百万级消息消费中的应用在进行小电铺装修批量复制时，发送复制商品会先于发送复制营销活动，以尽量保证复制商品先于复制营销活动（营销活动的创建是基于某商品来创建的），复制商品是一个很短小的任务，耗时极短。偶尔会出现部分营销活动复制不成功的情况，其原因也大多是对应的商品还未复制成功。对于这种情况，我便仿照自旋锁理论，在复制营销活动未找到对应商品时，进行自旋3次。这样就未出现过营销活动未复制成功">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-09-14T03:25:17.674Z">
+<meta property="og:updated_time" content="2019-09-23T09:36:00.098Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="理论到实际的总结">
 <meta name="twitter:description" content="自旋锁理论在百万级消息消费中的应用在进行小电铺装修批量复制时，发送复制商品会先于发送复制营销活动，以尽量保证复制商品先于复制营销活动（营销活动的创建是基于某商品来创建的），复制商品是一个很短小的任务，耗时极短。偶尔会出现部分营销活动复制不成功的情况，其原因也大多是对应的商品还未复制成功。对于这种情况，我便仿照自旋锁理论，在复制营销活动未找到对应商品时，进行自旋3次。这样就未出现过营销活动未复制成功">
@@ -212,6 +212,7 @@ var _hmt = _hmt || [];
       
         <h3 id="自旋锁理论在百万级消息消费中的应用"><a href="#自旋锁理论在百万级消息消费中的应用" class="headerlink" title="自旋锁理论在百万级消息消费中的应用"></a>自旋锁理论在百万级消息消费中的应用</h3><p>在进行小电铺装修批量复制时，发送复制商品会先于发送复制营销活动，以尽量保证复制商品先于复制营销活动（营销活动的创建是基于某商品来创建的），复制商品是一个很短小的任务，耗时极短。偶尔会出现部分营销活动复制不成功的情况，其原因也大多是对应的商品还未复制成功。对于这种情况，我便仿照自旋锁理论，在复制营销活动未找到对应商品时，进行自旋3次。这样就未出现过营销活动未复制成功的情况了。</p>
 <h3 id="借鉴Spring-Bean管理模式，实现策略模式"><a href="#借鉴Spring-Bean管理模式，实现策略模式" class="headerlink" title="借鉴Spring Bean管理模式，实现策略模式"></a>借鉴Spring Bean管理模式，实现策略模式</h3><p>新上线统一用户系统时，需要将旧系统的用户迁移至该系统，用户基本信息的迁移、用户验证信息的迁移、用户地址的迁移，不同的迁移需要使用不同的策略，这时就需要使用策略模式，使代码更优雅。具体如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Migration</span> <span class="keyword">extends</span> <span class="title">AbstractMigrationService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> MigrationTypeEnum <span class="title">getType</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">migrate</span><span class="params">(MigrationInfo migrationInfo)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MigrationCollector</span> <span class="keyword">implements</span> <span class="title">ApplicationContextAware</span>, <span class="title">InitializingBean</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> Map&lt;Integer, Migration&gt; cache = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">    ApplicationContext applicationContext;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterPropertiesSet</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        Map&lt;String, Migration&gt; map = applicationContext.getBeansOfType(Migration.class);</span><br><span class="line">        <span class="keyword">for</span> (Migration handler : map.values()) &#123;</span><br><span class="line">            MigrationTypeEnum type = handler.getType();</span><br><span class="line">            AssertUtil.isEmpty(cache.get(type.getValue()), String.format(<span class="string">"存在两个相同的 Handler"</span>, type));</span><br><span class="line">            cache.put(type.getValue(), handler);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setApplicationContext</span><span class="params">(ApplicationContext applicationContext)</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>.applicationContext = applicationContext;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Migration <span class="title">getMigrationHandler</span><span class="params">(Integer type)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> cache.get(type);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 旧系统用户绑定手机号，更新新库</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> xingping</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OTNPhoneMigration</span> <span class="keyword">extends</span> <span class="title">Migration</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Resource</span></span><br><span class="line">    <span class="keyword">private</span> NewUserDao newUserDao;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> MigrationTypeEnum <span class="title">getType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> MigrationTypeEnum.OTN_PHONE;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">migrate</span><span class="params">(MigrationInfo migrationInfo)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// TODO 具体迁移实现</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Java信号量的使用"><a href="#Java信号量的使用" class="headerlink" title="Java信号量的使用"></a>Java信号量的使用</h3><p>有一个定时任务线程和另一个订阅线程对同一个全局变量huyaIps集合进行操作，定时任务线程会直接覆盖huyaIps，订阅线程会对huyaIps进行add或remove元素操作。<br>此处存在并发问题，例如定时任务覆盖huyaIps前一刻，订阅线程修改了huyaIps，然后定时任务覆盖，会导致huyaIps更新不及时，需要等到下一个定时任务同步周期才能被更新（定时任务是全量同步huyaIps，订阅方式是实时变更huyaIps）。<br>此时借助信号量Semaphore，许可证为1，两个线程执行前均需要获取许可，只有获取到许可的一方才可以执行。此处两个线程的执行时间很短，用本方法是合适的，不会出现一方严重阻塞另一方的行为。</p>
 
       
       
@@ -339,7 +340,7 @@ var _hmt = _hmt || [];
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#自旋锁理论在百万级消息消费中的应用"><span class="toc-number">1.</span> <span class="toc-text">自旋锁理论在百万级消息消费中的应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#借鉴Spring-Bean管理模式，实现策略模式"><span class="toc-number">2.</span> <span class="toc-text">借鉴Spring Bean管理模式，实现策略模式</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#自旋锁理论在百万级消息消费中的应用"><span class="toc-number">1.</span> <span class="toc-text">自旋锁理论在百万级消息消费中的应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#借鉴Spring-Bean管理模式，实现策略模式"><span class="toc-number">2.</span> <span class="toc-text">借鉴Spring Bean管理模式，实现策略模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java信号量的使用"><span class="toc-number">3.</span> <span class="toc-text">Java信号量的使用</span></a></li></ol>
                     </div>
                 </span>
             </div>
@@ -470,10 +471,6 @@ MathJax.Hub.Queue(function() {
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">AI平台</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">机器学习</a>
               </li>
              
@@ -482,11 +479,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
+                <a href="javascript:void(0)" class="js-tag color5">AI平台</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">幂等性</a>
+                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -514,6 +511,10 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">幂等性</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
               </li>
              
@@ -534,19 +535,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">jmap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">jviusalvm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">屏蔽System.out</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">TreeMap</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -555,6 +544,18 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">时间戳</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">jmap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">jviusalvm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">TreeMap</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -567,6 +568,14 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">ConcurrentModificationException</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">转义</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -590,18 +599,6 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">转义</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">压测</a>
               </li>
              
@@ -614,35 +611,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">备份</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Ribbon</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">负载均衡</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">重放攻击</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">RabbitMQ</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">WIN 10</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">PyCharm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">Permission denied</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -658,6 +635,18 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Ribbon</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">负载均衡</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">RabbitMQ</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">x-delay</a>
               </li>
              
@@ -670,6 +659,18 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">WIN 10</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">PyCharm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">Permission denied</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Redis</a>
               </li>
              
@@ -678,15 +679,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">有序集合</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">ConcurrentSkipListMap</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -702,15 +703,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">有序集合</a>
+                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">ConcurrentSkipListMap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
+                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -739,6 +736,10 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">Connection Reset by Peer</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
               </li>
              
               <li class="article-tag-list-item">
