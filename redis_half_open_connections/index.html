@@ -19,7 +19,7 @@
 <meta property="og:image" content="https://lbanyan.github.io/img/redis_half_open/stack_info.png">
 <meta property="og:image" content="https://lbanyan.github.io/img/redis_half_open/port_connect_info.png">
 <meta property="og:image" content="https://lbanyan.github.io/img/redis_half_open/jedis_subscribe.png">
-<meta property="og:updated_time" content="2019-07-31T13:46:50.862Z">
+<meta property="og:updated_time" content="2019-11-06T10:21:41.988Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Redis 半开连接问题">
 <meta name="twitter:description" content="背景介绍生产环境使用 Redis 的 PUBSUB 模式进行参数配置，我的服务起一个单独的线程订阅 Redis 的配置 Key，配置更改通过 Redis Publish 到我的各服务上来完成配置变更。 但运行过程中，经常出现配置未更新的情况，似乎我的服务并未订阅到 Redis Publish 的信息。根据日志记录，也未看到消息订阅的处理行为。 生产环境：  Linux Version: 3.10.">
@@ -250,6 +250,7 @@ var _hmt = _hmt || [];
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">subscribe</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    Thread thread = <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">final</span> Jedis jedis1 = redisClient.getJedisPool().getResource();</span><br><span class="line">                <span class="keyword">final</span> Jedis jedis2 = redisClient.getJedisPool().getResource();</span><br><span class="line">                Thread subscribeThread = subscribe(jedis2);</span><br><span class="line">                <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        jedis1.ping();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                        logger.error(e.getMessage(), e);</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            redisClient.close(jedis1);</span><br><span class="line">                            redisClient.close(jedis2);</span><br><span class="line">                            subscribeThread.interrupt();</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">                            logger.error(e.getMessage(), ex);</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    ThreadUtil.sleep(<span class="number">1000</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                logger.error(e.getMessage(), e);</span><br><span class="line">            &#125;</span><br><span class="line">            ThreadUtil.sleep(<span class="number">1000</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    thread.setDaemon(<span class="keyword">true</span>);</span><br><span class="line">    thread.setName(<span class="string">"appcmdb-thread-appconfig-ping"</span>);</span><br><span class="line">    thread.start();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 启动一个守护线程，监听配置的变化，利用redis的pubsub模式实现java中的分布式内存</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Thread <span class="title">subscribe</span><span class="params">(Jedis jedis)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    Thread thread = <span class="keyword">new</span> Thread(() -&gt; jedis.subscribe(<span class="keyword">new</span> JedisPubSub() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onMessage</span><span class="params">(String channel, String message)</span> </span>&#123;</span><br><span class="line">            <span class="comment">// message是&#123;"key":"key",""value":"value"&#125;的json数据</span></span><br><span class="line">            <span class="comment">// 后台更新一个值后就要publish下</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Conf conf = JsonUtil.readValue(message, Conf.class);</span><br><span class="line">                String key = conf.getPkey();</span><br><span class="line">                String value = conf.getPvalue();</span><br><span class="line">                <span class="keyword">if</span> (EmptyUtil.isEmpty(value)) &#123;</span><br><span class="line">                    APP_CONFIG_CACHE.remove(key);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    APP_CONFIG_CACHE.put(key, value);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                logger.error(e.getMessage(), e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, RedisKeys.CHANNEL_APP_CONFIG));</span><br><span class="line">    thread.setDaemon(<span class="keyword">true</span>);</span><br><span class="line">    thread.setName(<span class="string">"appcmdb-thread-appconfig-subscribe"</span>);</span><br><span class="line">    thread.start();</span><br><span class="line">    <span class="keyword">return</span> thread;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>上述的定期检测时间不可过长，否则可能仍会出现阻塞读的半开连接问题。</p>
 <p>有关 JedisPool 保活策略可参考 <a href="https://www.jianshu.com/p/dcf1491afbe7" target="_blank" rel="noopener">Jedis源码分析</a>。</p>
+<h4 id="深入解析"><a href="#深入解析" class="headerlink" title="深入解析"></a>深入解析</h4><p>TCP连接惰性特性，会在中间设备恢复正常后，TCP连接重新恢复正常，但上述情况，中间设备正常后，客户端依然接收不到消息。<br>以blpop为例，在中间设备断开后，服务端将信息推给客户端时，发现异常，服务端会认为该客户端已断开连接，从而将该客户端的ip:port从连接记录中删掉，之后即使中间设备恢复正常了，服务端也不会推消息到该客户端了。</p>
 
       
       
@@ -405,7 +406,7 @@ var _hmt = _hmt || [];
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#背景介绍"><span class="toc-number">1.</span> <span class="toc-text">背景介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#问题分析"><span class="toc-number">2.</span> <span class="toc-text">问题分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#查看该线程是否挂掉了"><span class="toc-number">2.1.</span> <span class="toc-text">查看该线程是否挂掉了</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#查看我的服务和-Redis-的连接情况"><span class="toc-number">2.2.</span> <span class="toc-text">查看我的服务和 Redis 的连接情况</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#偶然发现"><span class="toc-number">2.3.</span> <span class="toc-text">偶然发现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Jedis-Keepalive"><span class="toc-number">2.4.</span> <span class="toc-text">Jedis Keepalive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Jedis-Socket-soTimeout"><span class="toc-number">2.5.</span> <span class="toc-text">Jedis Socket soTimeout</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他"><span class="toc-number">2.6.</span> <span class="toc-text">其他</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解决方案"><span class="toc-number">3.</span> <span class="toc-text">解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Jedis-层修改"><span class="toc-number">3.1.</span> <span class="toc-text">Jedis 层修改</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#用户层修改"><span class="toc-number">3.2.</span> <span class="toc-text">用户层修改</span></a></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#背景介绍"><span class="toc-number">1.</span> <span class="toc-text">背景介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#问题分析"><span class="toc-number">2.</span> <span class="toc-text">问题分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#查看该线程是否挂掉了"><span class="toc-number">2.1.</span> <span class="toc-text">查看该线程是否挂掉了</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#查看我的服务和-Redis-的连接情况"><span class="toc-number">2.2.</span> <span class="toc-text">查看我的服务和 Redis 的连接情况</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#偶然发现"><span class="toc-number">2.3.</span> <span class="toc-text">偶然发现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Jedis-Keepalive"><span class="toc-number">2.4.</span> <span class="toc-text">Jedis Keepalive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Jedis-Socket-soTimeout"><span class="toc-number">2.5.</span> <span class="toc-text">Jedis Socket soTimeout</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他"><span class="toc-number">2.6.</span> <span class="toc-text">其他</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解决方案"><span class="toc-number">3.</span> <span class="toc-text">解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Jedis-层修改"><span class="toc-number">3.1.</span> <span class="toc-text">Jedis 层修改</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#用户层修改"><span class="toc-number">3.2.</span> <span class="toc-text">用户层修改</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#深入解析"><span class="toc-number">3.3.</span> <span class="toc-text">深入解析</span></a></li></ol></li></ol>
                     </div>
                 </span>
             </div>
@@ -536,6 +537,14 @@ MathJax.Hub.Queue(function() {
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">AI平台</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">机器学习</a>
               </li>
              
@@ -544,11 +553,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">AI平台</a>
+                <a href="javascript:void(0)" class="js-tag color5">CSRF</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
+                <a href="javascript:void(0)" class="js-tag color3">HTTP Referer</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">幂等性</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -564,19 +577,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">CSRF</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">HTTP Referer</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">包冲突</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">幂等性</a>
+                <a href="javascript:void(0)" class="js-tag color5">Java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Java.Map</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -589,14 +598,6 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">乐观锁</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Java</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Java.Map</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -636,14 +637,6 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">转义</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Maven</a>
               </li>
              
@@ -664,7 +657,19 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">压测</a>
+                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">转义</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">备份</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -676,11 +681,27 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
+                <a href="javascript:void(0)" class="js-tag color3">压测</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">备份</a>
+                <a href="javascript:void(0)" class="js-tag color2">Ribbon</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">负载均衡</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">WIN 10</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">PyCharm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">Permission denied</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -700,14 +721,6 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Ribbon</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">负载均衡</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">RabbitMQ</a>
               </li>
              
@@ -724,18 +737,6 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">WIN 10</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">PyCharm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">Permission denied</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Redis</a>
               </li>
              
@@ -748,11 +749,27 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">有序集合</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">ConcurrentSkipListMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -768,19 +785,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
+                <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -801,10 +806,6 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">Connection Reset by Peer</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
               </li>
              
               <li class="article-tag-list-item">
