@@ -188,6 +188,82 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-jvm_tuning" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/jvm_tuning/">JVM 调优</a>
+    </h1>
+  
+
+        
+        <a href="/jvm_tuning/" class="archive-article-date">
+  	<time datetime="2019-11-19T13:24:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-11-19</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="案例一"><a href="#案例一" class="headerlink" title="案例一"></a>案例一</h3><p>线上用户公钥服务，收到如下告警：<br><img src="/img/jvm_tuning/secretkey_alarm.png" alt=""><br>收到告警的第一反应应该是当前是否有人在发版，近期是否是有代码变更。此处均没有。<br>到监控系统查询WEB质量情况，关注的点由前到后分为（故障发生前后时段）：请求总数、请求\响应时间、分机请求数、分机请求响应时间、URI请求分布、URI返回码分布、接入层WEB专区\Nginx统计数据等。<br>从这里看出本告警是由于该服务/downloadUserKey接口负载过高导致，如下图所示：<br><img src="/img/jvm_tuning/downloadUserKey.png" alt=""><br>但该接口之前以做过优化，增加了JVM和DB间的Redis缓存，以及JVM缓存。初步怀疑存在缓存穿透问题。</p>
+        
+          <a class="article-more-a" href="/jvm_tuning/#more">more >></a>
+        
+      
+      
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">JMV</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/jvm_tuning/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-theory_to_practice" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
   <div class="article-inner">
     
@@ -885,115 +961,6 @@ var _hmt = _hmt || [];
 
 
   
-    <article id="post-innodb_optimistic_lock" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/innodb_optimistic_lock/">MySQL InnoDB 不使用乐观锁的危害</a>
-    </h1>
-  
-
-        
-        <a href="/innodb_optimistic_lock/" class="archive-article-date">
-  	<time datetime="2017-12-01T11:38:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-12-01</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>MySQL InnoDB 默认为 Repeatable read 隔离级别，业务开发中如果不使用乐观锁，会造成业务处理混乱的问题，具体可以看下述例子：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`test`</span> (</span><br><span class="line">  <span class="string">`id`</span> <span class="built_in">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,</span><br><span class="line">  <span class="string">`status`</span> <span class="built_in">varchar</span>(<span class="number">255</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span>,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8mb4;</span><br></pre></td></tr></table></figure>
-<p>该表有两条记录:</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th style="text-align:right">status</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td style="text-align:right">active</td>
-</tr>
-<tr>
-<td>2</td>
-<td style="text-align:right">down</td>
-</tr>
-</tbody>
-</table>
-<p>先关闭自动提交：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">'autocommit'</span>;</span><br><span class="line"><span class="keyword">set</span> autocommit = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
-<p>执行如下两个事务：</p>
-<p><img src="/img/innodb_optimistic_lock.png" alt=""></p>
-<p>事务 A 在 SELECT 操作时，只会获取共享锁，而非排它锁，因而事务 B 可以先于事务 A 成功提交，导致 id = 1 的记录状态发生了改变，但事务 A 仍然可以成功执行，并修改了其他表数据。如果这并非您业务想看到的结果的话，应该使用 Hibernate @Version 乐观锁，这样在事务 B 执行完成后，事务 A 中对 test 表最后的修改必然失败，整个事务 A 便处理失败，不会出现您预想不到的混乱现象。</p>
-<p>看看有意思的，事务 A 在执行第 4 行 SELECT 语句时，看到的 id = 1 的 status 仍然是 active，这是受事务的隔离级别 Repeatable read 决定的。第 5 行如果增加 status = ‘active’ 的 WHERE 条件，则此 UPDATE 操作便不会修改 status 为 finish。<font color="red">这一点很有用，我常利用此来实现相关的锁任务操作。</font>依此，在 INSERT 操作，为了防止重复，可以把重复的判断作为条件放在 INSERT 语句中，但在这里会带来两个问题，一是如果不特殊处理（记录行追加 UUID 标识），无法获取插入记录的自增 ID，在需要该 ID 做后续操作的场景下，便无能为力了；二是使用 INSERT 的 SQL 拼接语句，肯定是没有使用 Hibernate 或是 MyBatis 对象插入方便的。上述方式，在一定程度上可以不需要额外再使用其他锁机制（例如 Redis 锁）来处理并发业务问题。</p>
-<p>MySQL 底层使用了乐观锁，为什么业务层这里还要使用乐观锁？<br>乐观锁只是处理并发问题的一种方法，MySQL 底层使用乐观锁是解决它底层的并发问题，业务层使用乐观锁，是解决业务层并发问题，并不冲突。</p>
-
-      
-      
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">InnoDB</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">乐观锁</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/innodb_optimistic_lock/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
@@ -1116,15 +1083,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">机器学习</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">增量推荐</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1136,7 +1103,27 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">Java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Java.Map</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">幂等性</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">JMV</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">jmap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">jviusalvm</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1152,15 +1139,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">包冲突</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Java</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Java.Map</a>
+                <a href="javascript:void(0)" class="js-tag color3">屏蔽System.out</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1176,23 +1155,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">屏蔽System.out</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Linux</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">时间戳</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">jmap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">jviusalvm</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1209,6 +1176,10 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">ConcurrentModificationException</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">包冲突</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1232,19 +1203,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">转义</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">备份</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
+                <a href="javascript:void(0)" class="js-tag color3">压测</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1256,7 +1215,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">压测</a>
+                <a href="javascript:void(0)" class="js-tag color3">备份</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1268,15 +1231,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">WIN 10</a>
+                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">PyCharm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">Permission denied</a>
+                <a href="javascript:void(0)" class="js-tag color3">转义</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1296,7 +1255,35 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">RabbitMQ</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">WIN 10</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">PyCharm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">Permission denied</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Broken pipe</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1312,39 +1299,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Broken pipe</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">有序集合</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">ConcurrentSkipListMap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1360,7 +1319,19 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
               </li>
              
               <li class="article-tag-list-item">

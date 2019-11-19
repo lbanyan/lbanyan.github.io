@@ -188,6 +188,88 @@ var _hmt = _hmt || [];
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-csrf" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/csrf/">CSRF防御</a>
+    </h1>
+  
+
+        
+        <a href="/csrf/" class="archive-article-date">
+  	<time datetime="2017-09-25T09:36:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-09-25</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="前期参考"><a href="#前期参考" class="headerlink" title="前期参考"></a>前期参考</h3><p>关于CSRF的基本知识及防御手段请参考：<a href="https://www.ibm.com/developerworks/cn/web/1102_niugang_csrf/" target="_blank" rel="noopener">CSRF 攻击的应对之道</a></p>
+<h3 id="防御方法"><a href="#防御方法" class="headerlink" title="防御方法"></a>防御方法</h3><h4 id="方法一：验证-HTTP-Referer-字段"><a href="#方法一：验证-HTTP-Referer-字段" class="headerlink" title="方法一：验证 HTTP Referer 字段"></a>方法一：验证 HTTP Referer 字段</h4><p>以下是使用验证 HTTP Referer 字段的方式实现的预防方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 基于referer进行CSRF验证</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  request</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span>  refererDomain 服务端要求的域名源</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> true：CSRF攻击，false：合法访问</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isCsrf</span><span class="params">(HttpServletRequest request, String refererDomain)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	String referer = request.getHeader(<span class="string">"Referer"</span>);</span><br><span class="line">	<span class="keyword">if</span> (StringUtils.isEmpty(referer)) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">int</span> domainStart = referer.indexOf(<span class="string">"://"</span>);</span><br><span class="line">	<span class="keyword">if</span> (domainStart == -<span class="number">1</span>) &#123;</span><br><span class="line">		domainStart = <span class="number">0</span>;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		domainStart += <span class="number">3</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 如果带端口,则冒号结尾,否则斜线结尾 */</span></span><br><span class="line">	<span class="keyword">int</span> domainEnd = referer.indexOf(<span class="string">':'</span>, domainStart);</span><br><span class="line">	<span class="keyword">if</span> (domainEnd == -<span class="number">1</span>) &#123;</span><br><span class="line">		domainEnd = referer.indexOf(<span class="string">'/'</span>, domainStart);</span><br><span class="line">		<span class="keyword">if</span> (domainEnd == -<span class="number">1</span>) &#123;</span><br><span class="line">			domainEnd = referer.length();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> domainEnd &lt; refererDomain.length() || !refererDomain.equals(referer.substring(domainStart, domainEnd));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>此方法对于IE6等低版本的浏览器存在风险，如果服务必须支持低版本浏览器，则该方式不可用。<br>这种方式主要是利用了使用CSRF的网站无法改变其网站Refer。</p>
+        
+          <a class="article-more-a" href="/csrf/#more">more >></a>
+        
+      
+      
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">CSRF</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">HTTP Referer</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/csrf/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-idempotency" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
   <div class="article-inner">
     
@@ -894,91 +976,6 @@ var _hmt = _hmt || [];
 
 
   
-    <article id="post-thread_safe_set_map" class="article article-type-post  article-index" itemscope="" itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/thread_safe_set_map/">线程安全的Set和Map</a>
-    </h1>
-  
-
-        
-        <a href="/thread_safe_set_map/" class="archive-article-date">
-  	<time datetime="2017-08-15T11:36:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-08-15</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="线程安全的SET"><a href="#线程安全的SET" class="headerlink" title="线程安全的SET"></a>线程安全的SET</h3><p>JDK中并没有直接提供线程安全的Set，可以通过使用ConcurrentHashMap来构造，当然最简单的方式是使用Google Guava提供Sets.newConcurrentHashSet()方法来构造。</p>
-<h3 id="线程安全的Map-lt-String-Set-lt-String-gt-gt"><a href="#线程安全的Map-lt-String-Set-lt-String-gt-gt" class="headerlink" title="线程安全的Map&lt;String, Set&lt;String&gt;&gt;"></a>线程安全的Map&lt;String, Set&lt;String&gt;&gt;</h3><p>使用ConcurrentHashMap&lt;String, Set&lt;String&gt;&gt;，在其value为非线程安全的Set情况下，Map整体非线程安全的。<br>例如：A和B线程同时修改此Map相同Key的value，A和B同时得到此value并进行修改，此修改必然会出现线程非安全的隐患。</p>
-<p>还有一个问题，由于不存在线程安全的Set类，故而无法直接在Map中声明其value为线程安全的Set。如何来实现线程安全的修改此Map操作呢？可以参考以下代码：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Set&lt;String&gt; set = Sets.newConcurrentHashSet(<span class="string">"**"</span>);</span><br><span class="line">Set&lt;String&gt; val = map.putIfAbsent(key, set);</span><br><span class="line"><span class="keyword">if</span> (val != <span class="keyword">null</span>) &#123;</span><br><span class="line">    val.addAll(set);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>代码中map为Map&lt;String, Set&lt;String&gt;&gt;类型，假设A线程是往键key的值set中加入“**”，B线程是往键key的值set中加入“tt”，刚开始map中不存在键key，A线程先执行到map.putIfAbsent(key, set)，则A线程就可以直接put成功，并返回值为null的val，注意map.putIfAbsent是线程安全的，不存在B线程put覆盖掉A线程的put结果。接着B线程再执行到map.putIfAbsent(key, set)，由于map中已经存在了键key，故此操作返回为此key对应的value值，其已经是一个线程安全的Set了。由于val是线程安全的Set，考虑多个线程同时执行到val.addAll(set)，也不会出现线程非安全的问题。</p>
-
-      
-      
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">线程安全</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Set</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Map</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/thread_safe_set_map/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
@@ -1101,15 +1098,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">机器学习</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">增量推荐</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CDN</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1121,7 +1118,27 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">Java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Java.Map</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">幂等性</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">JMV</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">jmap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">jviusalvm</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1137,15 +1154,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">包冲突</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">Java</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Java.Map</a>
+                <a href="javascript:void(0)" class="js-tag color3">屏蔽System.out</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1161,23 +1170,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">屏蔽System.out</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Linux</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">时间戳</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">jmap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">jviusalvm</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1194,6 +1191,10 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">ConcurrentModificationException</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">包冲突</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1217,19 +1218,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">转义</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">备份</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
+                <a href="javascript:void(0)" class="js-tag color3">压测</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1241,7 +1230,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">压测</a>
+                <a href="javascript:void(0)" class="js-tag color3">备份</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1253,15 +1246,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">WIN 10</a>
+                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">PyCharm</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">Permission denied</a>
+                <a href="javascript:void(0)" class="js-tag color3">转义</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1281,7 +1270,35 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">RabbitMQ</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">WIN 10</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">PyCharm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">Permission denied</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Broken pipe</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1297,39 +1314,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Broken pipe</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">有序集合</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">ConcurrentSkipListMap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1345,7 +1334,19 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
               </li>
              
               <li class="article-tag-list-item">
