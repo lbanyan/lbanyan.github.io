@@ -20,7 +20,8 @@
 <meta property="og:image" content="https://lbanyan.github.io/img/trouble/trace_cache.png">
 <meta property="og:image" content="https://lbanyan.github.io/img/trouble/autoidc_5XX.png">
 <meta property="og:image" content="https://lbanyan.github.io/img/trouble/autoidc_4XX.png">
-<meta property="og:updated_time" content="2019-11-19T14:12:18.295Z">
+<meta property="og:image" content="https://lbanyan.github.io/img/trouble/autoidc_jvm.png">
+<meta property="og:updated_time" content="2019-11-21T13:49:12.788Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="故障定位分析及解决">
 <meta name="twitter:description" content="案例一线上用户公钥服务，收到如下告警：12345告警分派:严重 健康拨测2019-11-13 15:31:46: 任务名(secretkey-jingwei.huya.com_16033),域名(secretkey-jingwei.huya.com),路径(/), 健康拨测： ip：10.185.32.105, port:8080, 多次拨测失败(3次)【此告警需要处理，请点击下方我的告警或登录告">
@@ -223,6 +224,10 @@ var _hmt = _hmt || [];
 <h3 id="案例二"><a href="#案例二" class="headerlink" title="案例二"></a>案例二</h3><p>混合云交付平台告警：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">告警分派:</span><br><span class="line">警告 web质量运营告警</span><br><span class="line">告警级别:告警 </span><br><span class="line">域名:autoidc-jingwei.huya.com </span><br><span class="line">Note:autoidc-jingwei.huya.com4XX请求数每分钟大于<span class="number">60</span> </span><br><span class="line">最近<span class="number">3</span>个值为:<span class="number">70.00</span> , <span class="number">341.00</span> , <span class="number">146.00</span> </span><br><span class="line">Timestamp:<span class="number">2019</span>-<span class="number">11</span>-<span class="number">15</span> <span class="number">09</span>:<span class="number">32</span>:<span class="number">00</span> </span><br><span class="line">https:<span class="comment">//skynet-jingwei.huya.com/web.html#/domain/autoidc-jingwei.huya.com/summary?type=webproxy</span></span><br><span class="line"></span><br><span class="line">【此告警需要处理，请点击下方我的告警或登录告警平台进行操作】</span><br></pre></td></tr></table></figure></p>
 <p>根据之前的分析路数，查询到下列异常统计数据：<br><img src="/img/trouble/autoidc_5XX.png" alt=""><br><img src="/img/trouble/autoidc_4XX.png" alt=""><br>确认是WEB专区问题，跟相关运维同学沟通，确认在该时段，深圳机房WEB专区磁盘高载，导致其服务质量下降，影响到后端服务。</p>
 <p>TODO 故障分析流程<br>代码变动-&gt;发布变动-&gt;web质量-&gt;硬件监控-&gt;JVM相关</p>
+<h3 id="案例三"><a href="#案例三" class="headerlink" title="案例三"></a>案例三</h3><p>混合云交付平台性能调优<br>主机信息：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CPU: E3-<span class="number">1231</span> / <span class="number">3.40</span>GHz / <span class="number">8</span>核</span><br><span class="line">MEM: <span class="number">16</span>G</span><br></pre></td></tr></table></figure></p>
+<p>旧JVM配置：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Xms1024m -Xmx4048m -Duser.timezone=Asia/Shanghai -Xmn1512m -XX:PermSize=<span class="number">192</span>m -Xss256k -XX:+DisableExplicitGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:+UseCMSCompactAtFullCollection -XX:LargePageSizeInBytes=<span class="number">128</span>m -XX:+UseFastAccessorMethods -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=<span class="number">70</span> -Djava.awt.headless=<span class="keyword">true</span> -Djava.net.preferIPv4Stack=<span class="keyword">true</span> -Duser.timezone=Asia/Shanghai -Dfile.encoding=UTF-<span class="number">8</span></span><br></pre></td></tr></table></figure></p>
+<p>新JVM配置：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Xmx8000M -Xms8000M -XX:MaxMetaspaceSize=<span class="number">512</span>M -XX:MetaspaceSize=<span class="number">512</span>M -XX:+UseG1GC -XX:MaxGCPauseMillis=<span class="number">100</span> -XX:+ParallelRefProcEnabled -Dfile.encoding=UTF-<span class="number">8</span> -Duser.timezone=Asia/Shanghai -XX:-RestrictContended</span><br></pre></td></tr></table></figure></p>
+<p>调整后，请求延时和响应延时均大幅下降40%，见下图：<br><img src="/img/trouble/autoidc_jvm.png" alt=""></p>
 
       
       
@@ -350,7 +355,7 @@ var _hmt = _hmt || [];
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#案例一"><span class="toc-number">1.</span> <span class="toc-text">案例一</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#案例二"><span class="toc-number">2.</span> <span class="toc-text">案例二</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#案例一"><span class="toc-number">1.</span> <span class="toc-text">案例一</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#案例二"><span class="toc-number">2.</span> <span class="toc-text">案例二</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#案例三"><span class="toc-number">3.</span> <span class="toc-text">案例三</span></a></li></ol>
                     </div>
                 </span>
             </div>
@@ -489,10 +494,6 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">AI平台</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">CDN</a>
               </li>
              
@@ -502,6 +503,10 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">HTTP Referer</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">AI平台</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -517,10 +522,6 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">幂等性</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">Java</a>
               </li>
              
@@ -529,7 +530,7 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">包冲突</a>
+                <a href="javascript:void(0)" class="js-tag color4">幂等性</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -545,11 +546,31 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">包冲突</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">jmap</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">jviusalvm</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">屏蔽System.out</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">时间戳</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">TreeMap</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -562,30 +583,6 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">ConcurrentModificationException</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">TreeMap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">屏蔽System.out</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">转义</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">时间戳</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -609,15 +606,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">csv</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">乱码</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">压测</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -625,7 +618,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">MySQL使用技巧</a>
+                <a href="javascript:void(0)" class="js-tag color5">重放攻击</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Markdown</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">转义</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -634,10 +635,6 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">负载均衡</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">重放攻击</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -653,19 +650,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">RabbitMQ客户端</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">TCP Keepalive</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">TCP半打开问题</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">RabbitMQ</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Broken pipe</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -681,19 +674,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Redis</a>
+                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Broken pipe</a>
+                <a href="javascript:void(0)" class="js-tag color4">csv</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
+                <a href="javascript:void(0)" class="js-tag color3">乱码</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -705,7 +694,27 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
+                <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">RabbitMQ客户端</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">TCP Keepalive</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">TCP半打开问题</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">SUBSCRIBE</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">半开连接</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -721,15 +730,15 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">SSH Forward</a>
+                <a href="javascript:void(0)" class="js-tag color5">线程安全</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
+                <a href="javascript:void(0)" class="js-tag color4">Set</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
+                <a href="javascript:void(0)" class="js-tag color4">Map</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -741,15 +750,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">线程安全</a>
+                <a href="javascript:void(0)" class="js-tag color5">HTTP</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Set</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Map</a>
+                <a href="javascript:void(0)" class="js-tag color5">QUIC</a>
               </li>
              
               <li class="article-tag-list-item">
